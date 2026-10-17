@@ -1,11 +1,14 @@
-Place your Ferrari rain night driving video here as ferrari-rain.mp4
+Background assets for AURORA
 
-Requirements:
-- Muted, looping, cinematic night rain drive of a red Ferrari
-- Preferred: 16:9 or 9:16, under 20MB for mobile performance
-- The app will automatically fall back to ferrari-fallback.jpg if the video is missing or fails to load
-- Respects prefers-reduced-motion (shows static image only)
+Current background image (used by the dashboard):
+- IMG_0281.jpeg  (the Ferrari rainy-night photo you uploaded)
 
-A fallback still image is recommended. One of the reference Ferrari night rain photos works well.
+To add a real animated Ferrari rain video later:
+1. Download a free licensed video from Pexels or Pixabay (search "Ferrari rain night" or "red sports car rain night drive").
+2. Rename it to ferrari-rain.mp4
+3. On GitHub.com in Safari, go to this folder (public/media), click "Add file" > "Upload files", and upload the mp4.
+4. The dashboard will automatically use the video when it is present and fall back to the image if the video fails or reduced-motion is on.
 
-Current status: video asset could not be auto-downloaded (Pexels direct links returned 403). Add your licensed video manually.
+The CSS rain layer still adds light motion even with the still image.
+
+No video is currently installed.
