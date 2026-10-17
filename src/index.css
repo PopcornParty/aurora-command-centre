@@ -81,3 +81,8 @@ body { font-size: 14px; line-height: 1.5; }
   .rain-layer, .background-scene video { animation: none; }
   * { transition: none !important; animation: none !important; }
 }
+
+.reduce-motion .rain-layer,
+.reduce-motion .background-scene video {
+  animation: none !important;
+}

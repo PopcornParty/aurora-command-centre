@@ -1,4 +1,4 @@
-import { Youtube, Camera, Lightbulb, Network, Plus, StickyNote, CheckSquare, BarChart3, Calculator, Timer } from 'lucide-react'
+import { Youtube, Camera, Lightbulb, Network, StickyNote, CheckSquare, BarChart3, Calculator, Timer } from 'lucide-react'
 
 interface Props {
   greeting: string
