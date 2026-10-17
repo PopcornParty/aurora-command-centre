@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Home, Activity, Lightbulb, Camera, Youtube, Network, Settings, Search, User, Menu } from 'lucide-react'
 import Overview from './pages/Overview'
 import Devices from './pages/Devices'
@@ -16,11 +16,28 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [time, setTime] = useState(new Date())
   const [commandOpen, setCommandOpen] = useState(false)
+  const [videoFailed, setVideoFailed] = useState(false)
+  const [reduceMotion, setReduceMotion] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000)
     return () => clearInterval(t)
   }, [])
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setReduceMotion(mq.matches)
+    const handler = () => setReduceMotion(mq.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  useEffect(() => {
+    if (reduceMotion && videoRef.current) {
+      videoRef.current.pause()
+    }
+  }, [reduceMotion])
 
   const hour = time.getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
@@ -61,9 +78,25 @@ export default function App() {
   return (
     <div className="app">
       <div className="background-scene">
-        <img src="/media/ferrari-fallback.jpg" alt="" />
+        {!videoFailed && !reduceMotion ? (
+          <video
+            ref={videoRef}
+            src="/media/ferrari-rain.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            onError={() => setVideoFailed(true)}
+            style={{ opacity: videoFailed ? 0 : 1, transition: 'opacity 0.6s' }}
+          />
+        ) : null}
+        <img
+          src="/media/ferrari-fallback.jpg"
+          alt=""
+          style={{ opacity: videoFailed || reduceMotion ? 1 : 0, transition: 'opacity 0.6s', position: 'absolute', inset: 0 }}
+        />
         <div className="background-overlay" />
-        <div className="rain-layer" />
+        {!reduceMotion && <div className="rain-layer" />}
       </div>
 
       <header className="topbar">
@@ -75,8 +108,8 @@ export default function App() {
           <div className="status-dot" title="Operating normally" />
         </div>
         <div className="topbar-right">
-          <span>{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-          <span>{time.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+          <span className="hide-mobile">{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          <span className="hide-mobile">{time.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}</span>
           <button className="icon-btn" onClick={() => setCommandOpen(true)} aria-label="Search">
             <Search size={18} />
           </button>
@@ -115,6 +148,13 @@ export default function App() {
           {renderPage()}
         </main>
       </div>
+
+      {sidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
       {commandOpen && (
         <div style={{
