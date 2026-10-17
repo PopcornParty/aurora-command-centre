@@ -4,28 +4,22 @@ Premium dark dashboard for @popcorn_party1.
 
 ## Live site
 
-Once GitHub Pages is enabled with the GitHub Actions source, the site will be available at:
-
 https://popcornparty.github.io/aurora-command-centre/
 
-## Enable GitHub Pages (required once)
+## What works
 
-1. On GitHub.com open this repository.
-2. Go to **Settings** → **Pages**.
-3. Under **Build and deployment** → **Source**, select **GitHub Actions**.
-4. Save.
+- Hash-based navigation (survives refresh)
+- Sidebar + mobile bottom bar
+- Notes, Tasks, Calculator, Unit Converter, Timer/Stopwatch, Scratchpad, Bookmarks (all local)
+- Channel Stats page with clearly labelled DEMO DATA
+- System Monitor (browser info only)
+- Settings with export/import/reset of local data
+- Ferrari rainy-night background (uploaded photo + CSS rain)
 
-After that, every push to `main` will automatically build and deploy the dashboard.
+## Demo data
 
-## Background
+Channel Stats and smart-home sections use sample values marked DEMO or Not connected. Nothing is live until you connect a real source.
 
-The Ferrari night-rain photo you uploaded (`public/media/IMG_0281.jpeg`) is used as the full-screen background. A CSS rain layer adds light motion.
+## GitHub Pages
 
-To add a real video later, upload `ferrari-rain.mp4` into `public/media/`.
-
-## Local development (optional)
-
-```bash
-npm install
-npm run dev
-```
+Source must be set to **GitHub Actions** in Settings → Pages. Every push to main builds and deploys.
