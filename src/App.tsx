@@ -16,7 +16,7 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [time, setTime] = useState(new Date())
   const [commandOpen, setCommandOpen] = useState(false)
-  const [videoFailed, setVideoFailed] = useState(false)
+  const [videoFailed, setVideoFailed] = useState(true) // start with image since no video is installed
   const [reduceMotion, setReduceMotion] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -91,9 +91,9 @@ export default function App() {
           />
         ) : null}
         <img
-          src="/media/ferrari-fallback.jpg"
-          alt=""
-          style={{ opacity: videoFailed || reduceMotion ? 1 : 0, transition: 'opacity 0.6s', position: 'absolute', inset: 0 }}
+          src="/media/IMG_0281.jpeg"
+          alt="Ferrari night rain"
+          style={{ opacity: 1, position: 'absolute', inset: 0, objectFit: 'cover', objectPosition: 'center 40%' }}
         />
         <div className="background-overlay" />
         {!reduceMotion && <div className="rain-layer" />}
