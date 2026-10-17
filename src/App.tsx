@@ -16,9 +16,11 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [time, setTime] = useState(new Date())
   const [commandOpen, setCommandOpen] = useState(false)
-  const [videoFailed, setVideoFailed] = useState(true) // start with image since no video is installed
+  const [videoFailed, setVideoFailed] = useState(true)
   const [reduceMotion, setReduceMotion] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
+
+  const base = import.meta.env.BASE_URL || '/'
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000)
@@ -81,7 +83,7 @@ export default function App() {
         {!videoFailed && !reduceMotion ? (
           <video
             ref={videoRef}
-            src="/media/ferrari-rain.mp4"
+            src={`${base}media/ferrari-rain.mp4`}
             autoPlay
             muted
             loop
@@ -91,7 +93,7 @@ export default function App() {
           />
         ) : null}
         <img
-          src="/media/IMG_0281.jpeg"
+          src={`${base}media/IMG_0281.jpeg`}
           alt="Ferrari night rain"
           style={{ opacity: 1, position: 'absolute', inset: 0, objectFit: 'cover', objectPosition: 'center 40%' }}
         />
