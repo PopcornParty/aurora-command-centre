@@ -1,3 +1,4 @@
+import { ChangeEvent } from 'react'
 import { loadJSON, saveJSON, resetKey } from '../lib/storage'
 
 export default function SettingsPage() {
@@ -13,7 +14,7 @@ export default function SettingsPage() {
     a.click()
   }
 
-  const importData = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const importData = (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]
     if (!f) return
     const reader = new FileReader()
@@ -52,14 +53,14 @@ export default function SettingsPage() {
       <div className="panel" style={{ marginTop: 16 }}>
         <h3>Channel Stats</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 6 }}>
-          Currently showing DEMO DATA. In the future you can paste or import your own server/channel metrics here. No live connection is active.
+          Currently showing DEMO DATA. You can export/import local data. No live connection is active.
         </p>
       </div>
 
       <div className="panel" style={{ marginTop: 16 }}>
         <h3>Appearance</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 6 }}>
-          Reduced motion is respected via the system setting. Ferrari background and glass theme are fixed for this build.
+          Reduced motion follows the system setting. Ferrari background and glass theme remain.
         </p>
       </div>
     </div>
