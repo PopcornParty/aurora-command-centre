@@ -16,6 +16,7 @@ export type TMatch = {
   nextId: string | null
   nextSlot: 'a' | 'b' | null
   group?: number
+  stage?: 'group' | 'knockout'
 }
 
 export type Tournament = {
@@ -70,7 +71,8 @@ export function generateKnockout(participants: Participant[]): TMatch[] {
         a: null, b: null,
         scoreA: null, scoreB: null, winner: null,
         status: 'upcoming',
-        nextId, nextSlot
+        nextId, nextSlot,
+        stage: 'knockout'
       })
     }
     matchCount /= 2
@@ -123,7 +125,8 @@ export function generateLeague(participants: Participant[]): TMatch[] {
         winner: null,
         status: 'upcoming',
         nextId: null,
-        nextSlot: null
+        nextSlot: null,
+        stage: 'group'
       })
     }
   }
@@ -151,7 +154,8 @@ export function generateGroups(participants: Participant[], numGroups: number, _
           status: 'upcoming',
           nextId: null,
           nextSlot: null,
-          group: gi
+          group: gi,
+          stage: 'group'
         })
       }
     }
@@ -259,7 +263,9 @@ export function standings(participants: Participant[], matches: TMatch[], groupI
 }
 
 export function champion(matches: TMatch[]): string | null {
-  const final = matches.filter(m => m.nextId === null).sort((a, b) => b.round - a.round)[0]
+  const knockout = matches.filter(m => m.stage !== 'group' && m.nextId === null)
+  if (!knockout.length) return null
+  const final = knockout.sort((a, b) => b.round - a.round)[0]
   return final?.status === 'completed' ? final.winner : null
 }
 
@@ -269,4 +275,42 @@ export function countByes(matches: TMatch[]): number {
 
 export function bracketSize(n: number): number {
   return nextPowerOf2(n)
+}
+
+export function tiedPositions(table: Standing[], qualify: number): number[] {
+  if (qualify <= 0 || qualify >= table.length) return []
+  const atCut = table[qualify - 1]
+  const next = table[qualify]
+  if (!atCut || !next) return []
+  if (atCut.points === next.points && atCut.diff === next.diff && atCut.scored === next.scored) {
+    const tied: number[] = []
+    for (let i = 0; i < table.length; i++) {
+      const s = table[i]
+      if (s.points === atCut.points && s.diff === atCut.diff && s.scored === atCut.scored) tied.push(i)
+    }
+    return tied.filter(i => i >= qualify - 1)
+  }
+  return []
+}
+
+export function groupQualifiers(participants: Participant[], matches: TMatch[], groups: string[][], qualify: number, rules = { win: 3, draw: 1, loss: 0 }): { qualifiers: string[] | null; ties: { group: number; positions: number[] }[] } {
+  const ties: { group: number; positions: number[] }[] = []
+  const qualifiers: string[] = []
+  for (let gi = 0; gi < groups.length; gi++) {
+    const table = standings(participants, matches, groups[gi], rules)
+    const groupMatches = matches.filter(m => m.group === gi)
+    const allDone = groupMatches.every(m => m.status === 'completed' || m.status === 'bye')
+    if (!allDone) return { qualifiers: null, ties: [] }
+    const t = tiedPositions(table, qualify)
+    if (t.length) ties.push({ group: gi, positions: t })
+    else {
+      for (let i = 0; i < qualify && i < table.length; i++) qualifiers.push(table[i].id)
+    }
+  }
+  if (ties.length) return { qualifiers: null, ties }
+  return { qualifiers, ties: [] }
+}
+
+export function generateKnockoutFromQualifiers(qualifiers: Participant[]): TMatch[] {
+  return generateKnockout(qualifiers).map(m => ({ ...m, id: `ko-${m.id}`, nextId: m.nextId ? `ko-${m.nextId}` : null }))
 }
