@@ -151,9 +151,9 @@ export default function App() {
               {group.items.map(item => {
                 const Icon = item.icon
                 return (
-                  <div key={item.id} className={`nav-item ${page === item.id ? 'active' : ''}`} onClick={() => setPage(item.id)}>
+                  <button key={item.id} type="button" className={`nav-item ${page === item.id ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPage(item.id) }} style={{ width: '100%', background: 'none', border: 'none', textAlign: 'left', font: 'inherit' }}>
                     <Icon size={16} />{item.label}
-                  </div>
+                  </button>
                 )
               })}
             </div>
