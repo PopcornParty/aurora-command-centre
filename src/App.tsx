@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Home, StickyNote, CheckSquare, Folder, Bookmark, FileText, Calculator as CalcIcon, ArrowLeftRight, Timer as TimerIcon, StopCircle, Type, Braces, Palette, Calendar, Key, FileSearch, Settings, Search, Menu } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Home, StickyNote, CheckSquare, Folder, Bookmark, FileText, Calculator as CalcIcon, ArrowLeftRight, Timer as TimerIcon, StopCircle, Type, Braces, Palette, Calendar, Key, FileSearch, Settings, Search, Menu, X, Trophy, LayoutGrid, Focus, FolderOpen } from 'lucide-react'
 import HomePage from './pages/Home'
 import Tasks from './pages/Tasks'
 import Notes from './pages/Notes'
@@ -17,11 +17,24 @@ import DateCalc from './pages/DateCalc'
 import PasswordGen from './pages/PasswordGen'
 import FileViewer from './pages/FileViewer'
 import SettingsPage from './pages/SettingsPage'
+import Scoreboard from './pages/Scoreboard'
+import CalendarPage from './pages/CalendarPage'
+import Kanban from './pages/Kanban'
+import FocusMode from './pages/FocusMode'
+import FileWorkspace from './pages/FileWorkspace'
 import { loadJSON } from './lib/storage'
 
-type Page = 'home' | 'tasks' | 'notes' | 'projects' | 'bookmarks' | 'scratchpad' | 'calculator' | 'converter' | 'timer' | 'stopwatch' | 'textutils' | 'json' | 'color' | 'datecalc' | 'password' | 'fileviewer' | 'settings'
+type Page = 'home' | 'tasks' | 'notes' | 'projects' | 'bookmarks' | 'scratchpad' | 'calculator' | 'converter' | 'timer' | 'stopwatch' | 'textutils' | 'json' | 'color' | 'datecalc' | 'password' | 'fileviewer' | 'settings' | 'scoreboard' | 'calendar' | 'kanban' | 'focus' | 'files'
 
-const VALID: Page[] = ['home','tasks','notes','projects','bookmarks','scratchpad','calculator','converter','timer','stopwatch','textutils','json','color','datecalc','password','fileviewer','settings']
+const VALID: Page[] = ['home','tasks','notes','projects','bookmarks','scratchpad','calculator','converter','timer','stopwatch','textutils','json','color','datecalc','password','fileviewer','settings','scoreboard','calendar','kanban','focus','files']
+
+const PAGE_LABELS: Record<Page, string> = {
+  home: 'Home', tasks: 'Tasks', notes: 'Notes', projects: 'Projects', bookmarks: 'Bookmarks',
+  scratchpad: 'Scratchpad', calculator: 'Calculator', converter: 'Converter', timer: 'Timer',
+  stopwatch: 'Stopwatch', textutils: 'Text Utils', json: 'JSON', color: 'Colour',
+  datecalc: 'Date Calc', password: 'Password', fileviewer: 'File Viewer', settings: 'Settings',
+  scoreboard: 'Scoreboard', calendar: 'Calendar', kanban: 'Kanban', focus: 'Focus', files: 'Files'
+}
 
 function getPageFromHash(): Page {
   const h = window.location.hash.replace('#', '') as Page
@@ -33,15 +46,18 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [time, setTime] = useState(new Date())
   const [commandOpen, setCommandOpen] = useState(false)
+  const [cmdQuery, setCmdQuery] = useState('')
   const [reduceMotion, setReduceMotion] = useState(false)
   const settings = loadJSON('aurora-settings', { accent: '#D9273E', overlay: 0.55, reduceMotion: false, clock12: true })
   const base = import.meta.env.BASE_URL || '/'
 
-  const setPage = (p: Page) => {
+  const setPage = useCallback((p: Page) => {
     setPageState(p)
     window.location.hash = p
     setSidebarOpen(false)
-  }
+    setCommandOpen(false)
+    setCmdQuery('')
+  }, [])
 
   useEffect(() => {
     const onHash = () => setPageState(getPageFromHash())
@@ -68,6 +84,30 @@ export default function App() {
     document.documentElement.classList.toggle('reduce-motion', reduceMotion)
   }, [settings, reduceMotion])
 
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [sidebarOpen])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSidebarOpen(false)
+        setCommandOpen(false)
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setCommandOpen(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   const hour = time.getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
 
@@ -79,25 +119,34 @@ export default function App() {
       { id: 'tasks' as Page, label: 'Tasks', icon: CheckSquare },
       { id: 'notes' as Page, label: 'Notes', icon: StickyNote },
       { id: 'projects' as Page, label: 'Projects', icon: Folder },
+      { id: 'kanban' as Page, label: 'Kanban', icon: LayoutGrid },
+      { id: 'calendar' as Page, label: 'Calendar', icon: Calendar },
       { id: 'bookmarks' as Page, label: 'Bookmarks', icon: Bookmark },
       { id: 'scratchpad' as Page, label: 'Scratchpad', icon: FileText },
+    ]},
+    { section: 'SPORTS', items: [
+      { id: 'scoreboard' as Page, label: 'Scoreboard', icon: Trophy },
     ]},
     { section: 'TOOLS', items: [
       { id: 'calculator' as Page, label: 'Calculator', icon: CalcIcon },
       { id: 'converter' as Page, label: 'Converter', icon: ArrowLeftRight },
       { id: 'timer' as Page, label: 'Timer', icon: TimerIcon },
       { id: 'stopwatch' as Page, label: 'Stopwatch', icon: StopCircle },
+      { id: 'focus' as Page, label: 'Focus', icon: Focus },
       { id: 'textutils' as Page, label: 'Text Utils', icon: Type },
       { id: 'json' as Page, label: 'JSON', icon: Braces },
       { id: 'color' as Page, label: 'Colour', icon: Palette },
       { id: 'datecalc' as Page, label: 'Date Calc', icon: Calendar },
       { id: 'password' as Page, label: 'Password', icon: Key },
       { id: 'fileviewer' as Page, label: 'File Viewer', icon: FileSearch },
+      { id: 'files' as Page, label: 'Files', icon: FolderOpen },
     ]},
     { section: 'SYSTEM', items: [
       { id: 'settings' as Page, label: 'Settings', icon: Settings },
     ]},
   ]
+
+  const filteredPages = VALID.filter(p => PAGE_LABELS[p].toLowerCase().includes(cmdQuery.toLowerCase()) || p.includes(cmdQuery.toLowerCase()))
 
   const renderPage = () => {
     switch (page) {
@@ -118,6 +167,11 @@ export default function App() {
       case 'password': return <PasswordGen />
       case 'fileviewer': return <FileViewer />
       case 'settings': return <SettingsPage />
+      case 'scoreboard': return <Scoreboard />
+      case 'calendar': return <CalendarPage />
+      case 'kanban': return <Kanban />
+      case 'focus': return <FocusMode />
+      case 'files': return <FileWorkspace />
       default: return <HomePage greeting={greeting} setPage={setPage} />
     }
   }
@@ -132,7 +186,9 @@ export default function App() {
 
       <header className="topbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button className="icon-btn" onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Menu"><Menu size={18} /></button>
+          <button className="icon-btn" onClick={() => setSidebarOpen(s => !s)} aria-label={sidebarOpen ? 'Close menu' : 'Open menu'} aria-expanded={sidebarOpen}>
+            {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
           <span className="wordmark">AURORA</span>
         </div>
         <div className="topbar-right">
@@ -143,49 +199,65 @@ export default function App() {
         </div>
       </header>
 
-      <div className="app-shell">
-        <nav className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-          {nav.map(group => (
-            <div key={group.section}>
-              <div className="nav-section">{group.section}</div>
-              {group.items.map(item => {
-                const Icon = item.icon
-                return (
-                  <button key={item.id} type="button" className={`nav-item ${page === item.id ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPage(item.id) }} style={{ width: '100%', background: 'none', border: 'none', textAlign: 'left', font: 'inherit' }}>
-                    <Icon size={16} />{item.label}
-                  </button>
-                )
-              })}
-            </div>
-          ))}
-        </nav>
+      {sidebarOpen && (
+        <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />
+      )}
+      <nav className={`sidebar ${sidebarOpen ? 'open' : ''}`} aria-hidden={!sidebarOpen}>
+        {nav.map(group => (
+          <div key={group.section}>
+            <div className="nav-section">{group.section}</div>
+            {group.items.map(item => {
+              const Icon = item.icon
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`nav-item ${page === item.id ? 'active' : ''}`}
+                  onClick={() => setPage(item.id)}
+                  aria-label={item.label}
+                >
+                  <Icon size={16} />{item.label}
+                </button>
+              )
+            })}
+          </div>
+        ))}
+      </nav>
 
+      <div className="app-shell">
         <main className="main-content">{renderPage()}</main>
       </div>
-
-      {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
 
       <nav className="bottom-nav">
         <button className={page==='home'?'active':''} onClick={() => setPage('home')}><Home size={18} /><span>Home</span></button>
         <button className={page==='tasks'?'active':''} onClick={() => setPage('tasks')}><CheckSquare size={18} /><span>Tasks</span></button>
-        <button className={page==='notes'?'active':''} onClick={() => setPage('notes')}><StickyNote size={18} /><span>Notes</span></button>
-        <button className={page==='projects'?'active':''} onClick={() => setPage('projects')}><Folder size={18} /><span>Projects</span></button>
-        <button onClick={() => setSidebarOpen(true)}><Menu size={18} /><span>More</span></button>
+        <button className={page==='scoreboard'?'active':''} onClick={() => setPage('scoreboard')}><Trophy size={18} /><span>Score</span></button>
+        <button className={page==='calendar'?'active':''} onClick={() => setPage('calendar')}><Calendar size={18} /><span>Cal</span></button>
+        <button onClick={() => setSidebarOpen(true)} aria-label="More"><Menu size={18} /><span>More</span></button>
       </nav>
 
       {commandOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '20vh' }} onClick={() => setCommandOpen(false)}>
-          <div className="panel" style={{ width: 420, maxWidth: '90%' }} onClick={e => e.stopPropagation()}>
-            <input autoFocus placeholder="Jump to page…" style={{ width: '100%', background: 'transparent', border: 'none', color: 'var(--text)', fontSize: 16, outline: 'none', padding: '4px 0' }} onKeyDown={e => {
-              if (e.key === 'Escape') setCommandOpen(false)
-              if (e.key === 'Enter') {
-                const v = (e.target as HTMLInputElement).value.toLowerCase()
-                const match = VALID.find(p => p.includes(v) || p === v)
-                if (match) setPage(match)
-                setCommandOpen(false)
-              }
-            }} />
-            <div style={{ marginTop: 12, fontSize: 13, color: 'var(--text-muted)' }}>Try: tasks, notes, calculator, settings</div>
+        <div className="command-overlay" onClick={() => setCommandOpen(false)}>
+          <div className="panel command-panel" onClick={e => e.stopPropagation()}>
+            <input
+              autoFocus
+              value={cmdQuery}
+              onChange={e => setCmdQuery(e.target.value)}
+              placeholder="Search pages and tools…"
+              style={{ width: '100%', background: 'transparent', border: 'none', color: 'var(--text)', fontSize: 16, outline: 'none', padding: '8px 0' }}
+              onKeyDown={e => {
+                if (e.key === 'Escape') setCommandOpen(false)
+                if (e.key === 'Enter' && filteredPages[0]) setPage(filteredPages[0])
+              }}
+            />
+            <div style={{ marginTop: 8, maxHeight: 280, overflowY: 'auto' }}>
+              {filteredPages.length === 0 && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No matches</p>}
+              {filteredPages.map(p => (
+                <button key={p} className="nav-item" style={{ width: '100%', background: 'none', border: 'none', textAlign: 'left' }} onClick={() => setPage(p)}>
+                  {PAGE_LABELS[p]}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
