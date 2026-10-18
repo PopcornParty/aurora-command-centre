@@ -22,18 +22,19 @@ import CalendarPage from './pages/CalendarPage'
 import Kanban from './pages/Kanban'
 import FocusMode from './pages/FocusMode'
 import FileWorkspace from './pages/FileWorkspace'
+import ToolsHub from './pages/ToolsHub'
 import { loadJSON } from './lib/storage'
 
-type Page = 'home' | 'tasks' | 'notes' | 'projects' | 'bookmarks' | 'scratchpad' | 'calculator' | 'converter' | 'timer' | 'stopwatch' | 'textutils' | 'json' | 'color' | 'datecalc' | 'password' | 'fileviewer' | 'settings' | 'scoreboard' | 'calendar' | 'kanban' | 'focus' | 'files'
+type Page = 'home' | 'tasks' | 'notes' | 'projects' | 'bookmarks' | 'scratchpad' | 'calculator' | 'converter' | 'timer' | 'stopwatch' | 'textutils' | 'json' | 'color' | 'datecalc' | 'password' | 'fileviewer' | 'settings' | 'scoreboard' | 'calendar' | 'kanban' | 'focus' | 'files' | 'toolshub'
 
-const VALID: Page[] = ['home','tasks','notes','projects','bookmarks','scratchpad','calculator','converter','timer','stopwatch','textutils','json','color','datecalc','password','fileviewer','settings','scoreboard','calendar','kanban','focus','files']
+const VALID: Page[] = ['home','tasks','notes','projects','bookmarks','scratchpad','calculator','converter','timer','stopwatch','textutils','json','color','datecalc','password','fileviewer','settings','scoreboard','calendar','kanban','focus','files','toolshub']
 
 const PAGE_LABELS: Record<Page, string> = {
   home: 'Home', tasks: 'Tasks', notes: 'Notes', projects: 'Projects', bookmarks: 'Bookmarks',
   scratchpad: 'Scratchpad', calculator: 'Calculator', converter: 'Converter', timer: 'Timer',
   stopwatch: 'Stopwatch', textutils: 'Text Utils', json: 'JSON', color: 'Colour',
   datecalc: 'Date Calc', password: 'Password', fileviewer: 'File Viewer', settings: 'Settings',
-  scoreboard: 'Scoreboard', calendar: 'Calendar', kanban: 'Kanban', focus: 'Focus', files: 'Files'
+  scoreboard: 'Scoreboard', calendar: 'Calendar', kanban: 'Kanban', focus: 'Focus', files: 'Files', toolshub: 'Tools Hub'
 }
 
 function getPageFromHash(): Page {
@@ -128,6 +129,7 @@ export default function App() {
       { id: 'scoreboard' as Page, label: 'Scoreboard', icon: Trophy },
     ]},
     { section: 'TOOLS', items: [
+      { id: 'toolshub' as Page, label: 'Tools Hub', icon: Search },
       { id: 'calculator' as Page, label: 'Calculator', icon: CalcIcon },
       { id: 'converter' as Page, label: 'Converter', icon: ArrowLeftRight },
       { id: 'timer' as Page, label: 'Timer', icon: TimerIcon },
@@ -172,6 +174,7 @@ export default function App() {
       case 'kanban': return <Kanban />
       case 'focus': return <FocusMode />
       case 'files': return <FileWorkspace />
+      case 'toolshub': return <ToolsHub />
       default: return <HomePage greeting={greeting} setPage={setPage} />
     }
   }
