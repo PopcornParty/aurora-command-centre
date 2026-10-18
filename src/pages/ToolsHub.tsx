@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { loadJSON, saveJSON } from '../lib/storage'
 import QRTool from './QRTool'
 import ClipboardPanel from './ClipboardPanel'
+import QuickNotes from './QuickNotes'
 import {
   textStats, toCase, removeDuplicateLines, trimLines, sortLines, findReplace,
   validateJson, formatJson, jsonDiff, jsonToCsv, csvToJson,
@@ -24,6 +25,7 @@ const TOOLS = [
   { id: 'color', name: 'Colour', cat: 'Dev', desc: 'HEX, RGB, HSL' },
   { id: 'qr', name: 'QR Code', cat: 'Dev', desc: 'Generate QR from text, URL, Wi-Fi, contact' },
   { id: 'clip', name: 'Clipboard', cat: 'Text', desc: 'Quick transforms, encode, JSON' },
+  { id: 'qnotes', name: 'Quick Notes', cat: 'Notes', desc: 'Lightweight notes, separate from main Notes' },
 ]
 
 export default function ToolsHub() {
@@ -62,6 +64,7 @@ export default function ToolsHub() {
         {active === 'color' && <ColorTool />}
         {active === 'qr' && <QRTool />}
         {active === 'clip' && <ClipboardPanel />}
+        {active === 'qnotes' && <QuickNotes />}
       </div>
     )
   }
