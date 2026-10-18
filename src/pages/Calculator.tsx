@@ -14,6 +14,7 @@ export default function Calculator() {
 
   const operate = (next: string) => {
     const n = parseFloat(display)
+    if (isNaN(n)) return
     if (acc === null) setAcc(n)
     else if (op) {
       const res = calc(acc, n, op)
