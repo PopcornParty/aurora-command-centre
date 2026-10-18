@@ -152,6 +152,28 @@ export default function App() {
 
   const filteredPages = VALID.filter(p => PAGE_LABELS[p].toLowerCase().includes(cmdQuery.toLowerCase()) || p.includes(cmdQuery.toLowerCase()))
 
+  type SearchHit = { type: string; label: string; page: Page }
+  const searchHits: SearchHit[] = (() => {
+    if (!cmdQuery.trim()) return []
+    const q = cmdQuery.toLowerCase()
+    const hits: SearchHit[] = filteredPages.map(p => ({ type: 'Page', label: PAGE_LABELS[p], page: p }))
+    try {
+      const tracker = loadJSON<{ projects?: { name: string }[] }>('aurora-tracker', { projects: [] })
+      for (const proj of tracker.projects || []) {
+        if (proj.name?.toLowerCase().includes(q)) hits.push({ type: 'Project', label: proj.name, page: 'tracker' })
+      }
+      const notes = loadJSON<{ title?: string }[]>('aurora-notes', [])
+      for (const n of notes) {
+        if (n.title?.toLowerCase().includes(q)) hits.push({ type: 'Note', label: n.title || 'Untitled', page: 'notes' })
+      }
+      const tasks = loadJSON<{ text?: string }[]>('aurora-tasks', [])
+      for (const t of tasks) {
+        if (t.text?.toLowerCase().includes(q)) hits.push({ type: 'Task', label: t.text || '', page: 'tasks' })
+      }
+    } catch { /* ignore */ }
+    return hits.slice(0, 12)
+  })()
+
   const renderPage = () => {
     switch (page) {
       case 'home': return <HomePage greeting={greeting} setPage={setPage} />
@@ -249,18 +271,18 @@ export default function App() {
               autoFocus
               value={cmdQuery}
               onChange={e => setCmdQuery(e.target.value)}
-              placeholder="Search pages and tools…"
+              placeholder="Search pages, projects, notes…"
               style={{ width: '100%', background: 'transparent', border: 'none', color: 'var(--text)', fontSize: 16, outline: 'none', padding: '8px 0' }}
               onKeyDown={e => {
                 if (e.key === 'Escape') setCommandOpen(false)
-                if (e.key === 'Enter' && filteredPages[0]) setPage(filteredPages[0])
+                if (e.key === 'Enter' && searchHits[0]) setPage(searchHits[0].page)
               }}
             />
             <div style={{ marginTop: 8, maxHeight: 280, overflowY: 'auto' }}>
-              {filteredPages.length === 0 && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No matches</p>}
-              {filteredPages.map(p => (
-                <button key={p} className="nav-item" style={{ width: '100%', background: 'none', border: 'none', textAlign: 'left' }} onClick={() => setPage(p)}>
-                  {PAGE_LABELS[p]}
+              {searchHits.length === 0 && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No matches</p>}
+              {searchHits.map((h, i) => (
+                <button key={i} className="nav-item" style={{ width: '100%', background: 'none', border: 'none', textAlign: 'left' }} onClick={() => setPage(h.page)}>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', marginRight: 6 }}>{h.type}</span>{h.label}
                 </button>
               ))}
             </div>
