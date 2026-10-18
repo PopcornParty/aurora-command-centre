@@ -1,12 +1,21 @@
-import { CheckSquare, StickyNote, Folder, Bookmark, Calculator, Timer, FileText } from 'lucide-react'
-import { loadJSON } from '../lib/storage'
+import { useState, useEffect } from 'react'
+import { CheckSquare, StickyNote, Folder, Bookmark, Calculator, Timer, FileText, Settings } from 'lucide-react'
+import { loadJSON, saveJSON } from '../lib/storage'
 
 interface Props {
   greeting: string
   setPage: (p: any) => void
 }
 
+const DASH_KEY = 'aurora-dashboard'
+const DEFAULT_WIDGETS = ['status', 'launch', 'tasks', 'notes']
+
 export default function HomePage({ greeting, setPage }: Props) {
+  const [widgets, setWidgets] = useState<string[]>(() => loadJSON(DASH_KEY, DEFAULT_WIDGETS))
+  const [editing, setEditing] = useState(false)
+  useEffect(() => { saveJSON(DASH_KEY, widgets) }, [widgets])
+  const toggle = (id: string) => setWidgets(w => w.includes(id) ? w.filter(x => x !== id) : [...w, id])
+  const reset = () => { setWidgets(DEFAULT_WIDGETS); setEditing(false) }
   const tasks = loadJSON<any[]>('aurora-tasks', [])
   const notes = loadJSON<any[]>('aurora-notes', [])
   const projects = loadJSON<any[]>('aurora-projects', [])
@@ -22,7 +31,22 @@ export default function HomePage({ greeting, setPage }: Props) {
         <p className="subtitle">Your local workspace. All data stays on this device.</p>
       </div>
 
-      <div className="status-row">
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+        <button className="btn" onClick={() => setEditing(!editing)}><Settings size={14} /> Layout</button>
+      </div>
+      {editing && (
+        <div className="panel" style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 13, marginBottom: 6 }}>Show widgets</div>
+          {['status', 'launch', 'tasks', 'notes', 'tracker', 'tools'].map(id => (
+            <label key={id} style={{ marginRight: 12, fontSize: 13 }}>
+              <input type="checkbox" checked={widgets.includes(id)} onChange={() => toggle(id)} /> {id}
+            </label>
+          ))}
+          <button className="btn" style={{ marginLeft: 8 }} onClick={reset}>Reset</button>
+        </div>
+      )}
+
+      {widgets.includes('status') && <div className="status-row">
         <div className="status-module">
           <div className="status-label">Open Tasks</div>
           <div className="status-value">{openTasks}</div>
@@ -39,9 +63,9 @@ export default function HomePage({ greeting, setPage }: Props) {
           <div className="status-label">Projects</div>
           <div className="status-value">{projects.length}</div>
         </div>
-      </div>
+      </div>}
 
-      <div className="panel">
+      {widgets.includes('launch') && <div className="panel">
         <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 12 }}>Quick Launch</h3>
         <div className="quick-actions">
           <button className="btn" onClick={() => setPage('tasks')}><CheckSquare size={14} /> Tasks</button>
@@ -52,9 +76,27 @@ export default function HomePage({ greeting, setPage }: Props) {
           <button className="btn" onClick={() => setPage('timer')}><Timer size={14} /> Timer</button>
           <button className="btn" onClick={() => setPage('scratchpad')}><FileText size={14} /> Scratchpad</button>
         </div>
-      </div>
+      </div>}
 
-      {pinnedNotes.length > 0 && (
+      {widgets.includes('tracker') && (
+        <div className="panel">
+          <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 8 }}>Project Tracker</h3>
+          <button className="btn" onClick={() => setPage('tracker')}>Open Tracker</button>
+        </div>
+      )}
+
+      {widgets.includes('tools') && (
+        <div className="panel">
+          <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 8 }}>Tools</h3>
+          <div className="quick-actions">
+            <button className="btn" onClick={() => setPage('toolshub')}>Tools Hub</button>
+            <button className="btn" onClick={() => setPage('timer')}>Timer</button>
+            <button className="btn" onClick={() => setPage('focus')}>Focus</button>
+          </div>
+        </div>
+      )}
+
+      {widgets.includes('notes') && pinnedNotes.length > 0 && (
         <div className="panel">
           <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 12 }}>Pinned Notes</h3>
           {pinnedNotes.map(n => (
@@ -66,7 +108,7 @@ export default function HomePage({ greeting, setPage }: Props) {
         </div>
       )}
 
-      {openTasks > 0 && (
+      {widgets.includes('tasks') && openTasks > 0 && (
         <div className="panel">
           <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 12 }}>Open Tasks</h3>
           {tasks.filter(t => !t.done).slice(0, 5).map(t => (
