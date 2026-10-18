@@ -18,6 +18,9 @@ export default function SettingsPage() {
       projects: loadJSON('aurora-projects', []),
       bookmarks: loadJSON('aurora-bookmarks', []),
       scratchpad: loadJSON('aurora-scratchpad', ''),
+      calendar: loadJSON('aurora-calendar', []),
+      kanban: loadJSON('aurora-kanban', { columns: ['To Do','Doing','Done'], cards: [] }),
+      scoreboard: loadJSON('aurora-scoreboard', {}),
       settings: s
     }
     const a = document.createElement('a')
@@ -39,6 +42,9 @@ export default function SettingsPage() {
         if (data.projects) saveJSON('aurora-projects', data.projects)
         if (data.bookmarks) saveJSON('aurora-bookmarks', data.bookmarks)
         if (data.scratchpad !== undefined) saveJSON('aurora-scratchpad', data.scratchpad)
+        if (data.calendar) saveJSON('aurora-calendar', data.calendar)
+        if (data.kanban) saveJSON('aurora-kanban', data.kanban)
+        if (data.scoreboard) saveJSON('aurora-scoreboard', data.scoreboard)
         if (data.settings) { setS({ ...DEFAULT, ...data.settings }); saveJSON(KEY, data.settings) }
         alert('Imported. Refresh to see changes.')
       } catch { alert('Invalid file') }
@@ -48,7 +54,7 @@ export default function SettingsPage() {
 
   const reset = () => {
     if (!confirm('Reset all local notes, tasks, projects, bookmarks and settings?')) return
-    ;['aurora-notes','aurora-tasks','aurora-projects','aurora-bookmarks','aurora-scratchpad', KEY].forEach(resetKey)
+    ;['aurora-notes','aurora-tasks','aurora-projects','aurora-bookmarks','aurora-scratchpad','aurora-calendar','aurora-kanban','aurora-scoreboard', KEY].forEach(resetKey)
     setS(DEFAULT)
     alert('Reset. Refresh the page.')
   }
@@ -70,7 +76,7 @@ export default function SettingsPage() {
 
       <div className="panel" style={{ marginTop: 16 }}>
         <h3>Data</h3>
-        <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '8px 0' }}>Notes, tasks, projects, bookmarks and settings are stored in your browser. Clearing site data will remove them.</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '8px 0' }}>Notes, tasks, projects, bookmarks, calendar, kanban and scoreboard are stored in your browser. Clearing site data will remove them.</p>
         <div className="quick-actions">
           <button className="btn" onClick={exportData}>Export backup</button>
           <label className="btn">Import <input type="file" accept=".json" onChange={importData} style={{ display: 'none' }} /></label>
