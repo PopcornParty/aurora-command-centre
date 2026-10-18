@@ -1,25 +1,27 @@
-import { useState, useEffect, useRef } from 'react'
-import { Home, Activity, Lightbulb, Camera, Youtube, Network, Settings, Search, User, Menu, StickyNote, CheckSquare, Calculator as CalcIcon, ArrowLeftRight, Timer as TimerIcon, FileText, Bookmark, BarChart3 } from 'lucide-react'
-import Overview from './pages/Overview'
-import Devices from './pages/Devices'
-import Cameras from './pages/Cameras'
-import Lighting from './pages/Lighting'
-import YouTube from './pages/YouTube'
-import ActivityPage from './pages/Activity'
-import SettingsPage from './pages/SettingsPage'
-import Notes from './pages/Notes'
+import { useState, useEffect } from 'react'
+import { Home, StickyNote, CheckSquare, Folder, Bookmark, FileText, Calculator as CalcIcon, ArrowLeftRight, Timer as TimerIcon, StopCircle, Type, Braces, Palette, Calendar, Key, FileSearch, Settings, Search, Menu } from 'lucide-react'
+import HomePage from './pages/Home'
 import Tasks from './pages/Tasks'
+import Notes from './pages/Notes'
+import Projects from './pages/Projects'
+import Bookmarks from './pages/Bookmarks'
+import Scratchpad from './pages/Scratchpad'
 import Calculator from './pages/Calculator'
 import Converter from './pages/Converter'
 import Timer from './pages/Timer'
-import Scratchpad from './pages/Scratchpad'
-import Bookmarks from './pages/Bookmarks'
-import ChannelStats from './pages/ChannelStats'
-import SystemMonitor from './pages/SystemMonitor'
+import Stopwatch from './pages/Stopwatch'
+import TextUtils from './pages/TextUtils'
+import JsonFormatter from './pages/JsonFormatter'
+import ColorUtil from './pages/ColorUtil'
+import DateCalc from './pages/DateCalc'
+import PasswordGen from './pages/PasswordGen'
+import FileViewer from './pages/FileViewer'
+import SettingsPage from './pages/SettingsPage'
+import { loadJSON } from './lib/storage'
 
-type Page = 'home' | 'activity' | 'devices' | 'cameras' | 'lighting' | 'youtube' | 'stats' | 'network' | 'settings' | 'notes' | 'tasks' | 'calculator' | 'converter' | 'timer' | 'scratchpad' | 'bookmarks'
+type Page = 'home' | 'tasks' | 'notes' | 'projects' | 'bookmarks' | 'scratchpad' | 'calculator' | 'converter' | 'timer' | 'stopwatch' | 'textutils' | 'json' | 'color' | 'datecalc' | 'password' | 'fileviewer' | 'settings'
 
-const VALID: Page[] = ['home','activity','devices','cameras','lighting','youtube','stats','network','settings','notes','tasks','calculator','converter','timer','scratchpad','bookmarks']
+const VALID: Page[] = ['home','tasks','notes','projects','bookmarks','scratchpad','calculator','converter','timer','stopwatch','textutils','json','color','datecalc','password','fileviewer','settings']
 
 function getPageFromHash(): Page {
   const h = window.location.hash.replace('#', '') as Page
@@ -31,9 +33,8 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [time, setTime] = useState(new Date())
   const [commandOpen, setCommandOpen] = useState(false)
-  const [videoFailed, setVideoFailed] = useState(true)
   const [reduceMotion, setReduceMotion] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const settings = loadJSON('aurora-settings', { accent: '#D9273E', overlay: 0.55, reduceMotion: false, clock12: true })
   const base = import.meta.env.BASE_URL || '/'
 
   const setPage = (p: Page) => {
@@ -55,76 +56,75 @@ export default function App() {
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReduceMotion(mq.matches)
-    const handler = () => setReduceMotion(mq.matches)
+    setReduceMotion(mq.matches || settings.reduceMotion)
+    const handler = () => setReduceMotion(mq.matches || settings.reduceMotion)
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
-  }, [])
+  }, [settings.reduceMotion])
 
   useEffect(() => {
-    if (reduceMotion && videoRef.current) videoRef.current.pause()
-  }, [reduceMotion])
+    document.documentElement.style.setProperty('--accent', settings.accent || '#D9273E')
+    document.documentElement.style.setProperty('--overlay', String(settings.overlay ?? 0.55))
+    document.documentElement.classList.toggle('reduce-motion', reduceMotion)
+  }, [settings, reduceMotion])
 
   const hour = time.getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
 
   const nav = [
-    { section: 'OVERVIEW', items: [
+    { section: 'COMMAND', items: [
       { id: 'home' as Page, label: 'Home', icon: Home },
-      { id: 'activity' as Page, label: 'Activity', icon: Activity },
+    ]},
+    { section: 'PRODUCTIVITY', items: [
+      { id: 'tasks' as Page, label: 'Tasks', icon: CheckSquare },
+      { id: 'notes' as Page, label: 'Notes', icon: StickyNote },
+      { id: 'projects' as Page, label: 'Projects', icon: Folder },
+      { id: 'bookmarks' as Page, label: 'Bookmarks', icon: Bookmark },
+      { id: 'scratchpad' as Page, label: 'Scratchpad', icon: FileText },
     ]},
     { section: 'TOOLS', items: [
-      { id: 'notes' as Page, label: 'Notes', icon: StickyNote },
-      { id: 'tasks' as Page, label: 'Tasks', icon: CheckSquare },
       { id: 'calculator' as Page, label: 'Calculator', icon: CalcIcon },
       { id: 'converter' as Page, label: 'Converter', icon: ArrowLeftRight },
       { id: 'timer' as Page, label: 'Timer', icon: TimerIcon },
-      { id: 'scratchpad' as Page, label: 'Scratchpad', icon: FileText },
-      { id: 'bookmarks' as Page, label: 'Bookmarks', icon: Bookmark },
-    ]},
-    { section: 'CREATOR', items: [
-      { id: 'stats' as Page, label: 'Channel Stats', icon: BarChart3 },
-      { id: 'youtube' as Page, label: 'YouTube Ideas', icon: Youtube },
-    ]},
-    { section: 'SMART HOME', items: [
-      { id: 'devices' as Page, label: 'Devices', icon: Lightbulb },
-      { id: 'cameras' as Page, label: 'Cameras', icon: Camera },
-      { id: 'lighting' as Page, label: 'Lighting', icon: Lightbulb },
+      { id: 'stopwatch' as Page, label: 'Stopwatch', icon: StopCircle },
+      { id: 'textutils' as Page, label: 'Text Utils', icon: Type },
+      { id: 'json' as Page, label: 'JSON', icon: Braces },
+      { id: 'color' as Page, label: 'Colour', icon: Palette },
+      { id: 'datecalc' as Page, label: 'Date Calc', icon: Calendar },
+      { id: 'password' as Page, label: 'Password', icon: Key },
+      { id: 'fileviewer' as Page, label: 'File Viewer', icon: FileSearch },
     ]},
     { section: 'SYSTEM', items: [
-      { id: 'network' as Page, label: 'System Monitor', icon: Network },
       { id: 'settings' as Page, label: 'Settings', icon: Settings },
     ]},
   ]
 
   const renderPage = () => {
     switch (page) {
-      case 'home': return <Overview greeting={greeting} setPage={setPage} />
-      case 'activity': return <ActivityPage />
-      case 'devices': return <Devices />
-      case 'cameras': return <Cameras />
-      case 'lighting': return <Lighting />
-      case 'youtube': return <YouTube />
-      case 'stats': return <ChannelStats />
-      case 'network': return <SystemMonitor />
-      case 'settings': return <SettingsPage />
-      case 'notes': return <Notes />
+      case 'home': return <HomePage greeting={greeting} setPage={setPage} />
       case 'tasks': return <Tasks />
+      case 'notes': return <Notes />
+      case 'projects': return <Projects />
+      case 'bookmarks': return <Bookmarks />
+      case 'scratchpad': return <Scratchpad />
       case 'calculator': return <Calculator />
       case 'converter': return <Converter />
       case 'timer': return <Timer />
-      case 'scratchpad': return <Scratchpad />
-      case 'bookmarks': return <Bookmarks />
-      default: return <Overview greeting={greeting} setPage={setPage} />
+      case 'stopwatch': return <Stopwatch />
+      case 'textutils': return <TextUtils />
+      case 'json': return <JsonFormatter />
+      case 'color': return <ColorUtil />
+      case 'datecalc': return <DateCalc />
+      case 'password': return <PasswordGen />
+      case 'fileviewer': return <FileViewer />
+      case 'settings': return <SettingsPage />
+      default: return <HomePage greeting={greeting} setPage={setPage} />
     }
   }
 
   return (
     <div className="app">
       <div className="background-scene">
-        {!videoFailed && !reduceMotion ? (
-          <video ref={videoRef} src={`${base}media/ferrari-rain.mp4`} autoPlay muted loop playsInline onError={() => setVideoFailed(true)} style={{ opacity: videoFailed ? 0 : 1, transition: 'opacity 0.6s' }} />
-        ) : null}
         <img src={`${base}media/IMG_0281.jpeg`} alt="Ferrari night rain" style={{ opacity: 1, position: 'absolute', inset: 0, objectFit: 'cover', objectPosition: 'center 40%' }} />
         <div className="background-overlay" />
         {!reduceMotion && <div className="rain-layer" />}
@@ -134,14 +134,12 @@ export default function App() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button className="icon-btn" onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Menu"><Menu size={18} /></button>
           <span className="wordmark">AURORA</span>
-          <div className="status-dot" title="Operating normally" />
         </div>
         <div className="topbar-right">
-          <span className="hide-mobile">{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          <span className="hide-mobile">{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: settings.clock12 })}</span>
           <span className="hide-mobile">{time.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}</span>
           <button className="icon-btn" onClick={() => setCommandOpen(true)} aria-label="Search"><Search size={18} /></button>
           <button className="icon-btn" onClick={() => setPage('settings')} aria-label="Settings"><Settings size={18} /></button>
-          <a href="https://www.youtube.com/@popcorn_party1" target="_blank" rel="noopener noreferrer" className="icon-btn" aria-label="YouTube channel"><User size={18} /></a>
         </div>
       </header>
 
@@ -169,9 +167,9 @@ export default function App() {
 
       <nav className="bottom-nav">
         <button className={page==='home'?'active':''} onClick={() => setPage('home')}><Home size={18} /><span>Home</span></button>
-        <button className={page==='notes'?'active':''} onClick={() => setPage('notes')}><StickyNote size={18} /><span>Notes</span></button>
         <button className={page==='tasks'?'active':''} onClick={() => setPage('tasks')}><CheckSquare size={18} /><span>Tasks</span></button>
-        <button className={page==='stats'?'active':''} onClick={() => setPage('stats')}><BarChart3 size={18} /><span>Stats</span></button>
+        <button className={page==='notes'?'active':''} onClick={() => setPage('notes')}><StickyNote size={18} /><span>Notes</span></button>
+        <button className={page==='projects'?'active':''} onClick={() => setPage('projects')}><Folder size={18} /><span>Projects</span></button>
         <button onClick={() => setSidebarOpen(true)}><Menu size={18} /><span>More</span></button>
       </nav>
 
@@ -187,7 +185,7 @@ export default function App() {
                 setCommandOpen(false)
               }
             }} />
-            <div style={{ marginTop: 12, fontSize: 13, color: 'var(--text-muted)' }}>Try: notes, tasks, stats, calculator, settings</div>
+            <div style={{ marginTop: 12, fontSize: 13, color: 'var(--text-muted)' }}>Try: tasks, notes, calculator, settings</div>
           </div>
         </div>
       )}
