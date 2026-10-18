@@ -17,3 +17,13 @@ export function saveJSON(key: string, value: unknown) {
 export function resetKey(key: string) {
   localStorage.removeItem(key)
 }
+
+export function exportAll() {
+  const keys = ['aurora-notes', 'aurora-tasks', 'aurora-projects', 'aurora-bookmarks', 'aurora-scratchpad', 'aurora-settings']
+  const data: Record<string, unknown> = {}
+  keys.forEach(k => {
+    const raw = localStorage.getItem(k)
+    if (raw) data[k] = JSON.parse(raw)
+  })
+  return data
+}
