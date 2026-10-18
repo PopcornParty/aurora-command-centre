@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { loadJSON, saveJSON } from '../lib/storage'
+import TournamentManager from './Tournament'
 
 type Match = { id: string; name: string; red: string; blue: string; redScore: number; blueScore: number; history: { team: 'red'|'blue'; delta: number }[] }
 
 const KEY = 'aurora-scoreboard'
 
 export default function Scoreboard() {
+  const [tab, setTab] = useState<'live'|'tournaments'>('live')
   const [match, setMatch] = useState<Match>(() => loadJSON(KEY, {
     id: 'current', name: 'Match', red: 'Red', blue: 'Blue', redScore: 0, blueScore: 0, history: []
   }))
@@ -52,7 +54,12 @@ export default function Scoreboard() {
 
   return (
     <div>
-      <h1 className="page-title">Scoreboard</h1>
+      <h1 className="page-title">Scoreboard & Tournaments</h1>
+      <div className="quick-actions" style={{ margin: '12px 0' }}>
+        <button className={`btn ${tab==='live'?'btn-primary':''}`} onClick={() => setTab('live')}>Live Score</button>
+        <button className={`btn ${tab==='tournaments'?'btn-primary':''}`} onClick={() => setTab('tournaments')}>Tournaments</button>
+      </div>
+      {tab === 'tournaments' ? <TournamentManager /> : <>
       <p className="subtitle">{match.name} — saved locally</p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
@@ -90,6 +97,7 @@ export default function Scoreboard() {
           <button className="btn btn-primary" onClick={saveNames}>Save</button>
         </div>
       )}
+      </>}
     </div>
   )
 }
