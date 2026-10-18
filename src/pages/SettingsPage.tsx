@@ -1,9 +1,11 @@
 import { ChangeEvent, useState, useEffect } from 'react'
 import { loadJSON, saveJSON, resetKey } from '../lib/storage'
+import { validateTracker } from '../lib/tracker'
 
 type Settings = { accent: string; overlay: number; reduceMotion: boolean; clock12: boolean }
 
 const KEY = 'aurora-settings'
+const EXPORT_KEY = 'aurora-last-export'
 const DEFAULT: Settings = { accent: '#D9273E', overlay: 0.55, reduceMotion: false, clock12: true }
 
 export default function SettingsPage() {
@@ -22,8 +24,11 @@ export default function SettingsPage() {
       kanban: loadJSON('aurora-kanban', { columns: ['To Do','Doing','Done'], cards: [] }),
       scoreboard: loadJSON('aurora-scoreboard', {}),
       tournaments: loadJSON('aurora-tournaments', []),
-      settings: s
+      tracker: loadJSON('aurora-tracker', { projects: [] }),
+      settings: s,
+      exportedAt: Date.now()
     }
+    saveJSON(EXPORT_KEY, Date.now())
     const a = document.createElement('a')
     a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }))
     a.download = 'aurora-backup.json'
@@ -47,6 +52,10 @@ export default function SettingsPage() {
         if (data.kanban) saveJSON('aurora-kanban', data.kanban)
         if (data.scoreboard) saveJSON('aurora-scoreboard', data.scoreboard)
         if (data.tournaments) saveJSON('aurora-tournaments', data.tournaments)
+        if (data.tracker !== undefined && data.tracker !== null) {
+          const valid = validateTracker(data.tracker)
+          saveJSON('aurora-tracker', valid)
+        }
         if (data.settings) { setS({ ...DEFAULT, ...data.settings }); saveJSON(KEY, data.settings) }
         alert('Imported. Refresh to see changes.')
       } catch { alert('Invalid file') }
@@ -56,7 +65,7 @@ export default function SettingsPage() {
 
   const reset = () => {
     if (!confirm('Reset all local notes, tasks, projects, bookmarks and settings?')) return
-    ;['aurora-notes','aurora-tasks','aurora-projects','aurora-bookmarks','aurora-scratchpad','aurora-calendar','aurora-kanban','aurora-scoreboard','aurora-tournaments', KEY].forEach(resetKey)
+    ;['aurora-notes','aurora-tasks','aurora-projects','aurora-bookmarks','aurora-scratchpad','aurora-calendar','aurora-kanban','aurora-scoreboard','aurora-tournaments','aurora-tracker', KEY].forEach(resetKey)
     setS(DEFAULT)
     alert('Reset. Refresh the page.')
   }
@@ -77,8 +86,19 @@ export default function SettingsPage() {
       </div>
 
       <div className="panel" style={{ marginTop: 16 }}>
+        <h3>Data Safety</h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '8px 0' }}>
+          Backups are manual. Export a file, keep it safe, and import it to restore. Nothing is uploaded.
+        </p>
+        <LastExport />
+        <p style={{ fontSize: 13, marginTop: 8 }}>
+          To restore: click Import and choose a previously exported aurora-backup.json. Older backups without Tracker data will not erase your current Tracker projects.
+        </p>
+      </div>
+
+      <div className="panel" style={{ marginTop: 16 }}>
         <h3>Data</h3>
-        <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '8px 0' }}>Notes, tasks, projects, bookmarks, calendar, kanban, scoreboard and tournaments are stored in your browser. Clearing site data will remove them.</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '8px 0' }}>Notes, tasks, projects, bookmarks, calendar, kanban, scoreboard, tournaments and tracker are stored in your browser. Clearing site data will remove them.</p>
         <div className="quick-actions">
           <button className="btn" onClick={exportData}>Export backup</button>
           <label className="btn">Import <input type="file" accept=".json" onChange={importData} style={{ display: 'none' }} /></label>
@@ -87,4 +107,10 @@ export default function SettingsPage() {
       </div>
     </div>
   )
+}
+
+function LastExport() {
+  const ts = loadJSON<number | null>(EXPORT_KEY, null)
+  if (!ts) return <p style={{ fontSize: 13 }}>No export recorded yet.</p>
+  return <p style={{ fontSize: 13 }}>Last successful export: {new Date(ts).toLocaleString()}</p>
 }
