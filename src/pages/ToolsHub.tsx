@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react'
 import { loadJSON, saveJSON } from '../lib/storage'
+import QRTool from './QRTool'
+import ClipboardPanel from './ClipboardPanel'
 import {
   textStats, toCase, removeDuplicateLines, trimLines, sortLines, findReplace,
   validateJson, formatJson, jsonDiff, jsonToCsv, csvToJson,
@@ -20,6 +22,8 @@ const TOOLS = [
   { id: 'file', name: 'File Tools', cat: 'Files', desc: 'Read text, JSON, CSV locally' },
   { id: 'pass', name: 'Password', cat: 'Security', desc: 'Secure random passwords' },
   { id: 'color', name: 'Colour', cat: 'Dev', desc: 'HEX, RGB, HSL' },
+  { id: 'qr', name: 'QR Code', cat: 'Dev', desc: 'Generate QR from text, URL, Wi-Fi, contact' },
+  { id: 'clip', name: 'Clipboard', cat: 'Text', desc: 'Quick transforms, encode, JSON' },
 ]
 
 export default function ToolsHub() {
@@ -56,6 +60,8 @@ export default function ToolsHub() {
         {active === 'file' && <FileTool />}
         {active === 'pass' && <PassTool />}
         {active === 'color' && <ColorTool />}
+        {active === 'qr' && <QRTool />}
+        {active === 'clip' && <ClipboardPanel />}
       </div>
     )
   }
