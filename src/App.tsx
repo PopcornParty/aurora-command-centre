@@ -24,18 +24,22 @@ import FocusMode from './pages/FocusMode'
 import FileWorkspace from './pages/FileWorkspace'
 import ToolsHub from './pages/ToolsHub'
 import Tracker from './pages/Tracker'
+import DecisionCalc from './pages/DecisionCalc'
+import Estimator from './pages/Estimator'
+import Wizard from './pages/Wizard'
+import SketchStudio from './pages/SketchStudio'
 import { loadJSON } from './lib/storage'
 
-type Page = 'home' | 'tasks' | 'notes' | 'projects' | 'bookmarks' | 'scratchpad' | 'calculator' | 'converter' | 'timer' | 'stopwatch' | 'textutils' | 'json' | 'color' | 'datecalc' | 'password' | 'fileviewer' | 'settings' | 'scoreboard' | 'calendar' | 'kanban' | 'focus' | 'files' | 'toolshub' | 'tracker'
+type Page = 'home' | 'tasks' | 'notes' | 'projects' | 'bookmarks' | 'scratchpad' | 'calculator' | 'converter' | 'timer' | 'stopwatch' | 'textutils' | 'json' | 'color' | 'datecalc' | 'password' | 'fileviewer' | 'settings' | 'scoreboard' | 'calendar' | 'kanban' | 'focus' | 'files' | 'toolshub' | 'tracker' | 'decision' | 'estimator' | 'wizard' | 'sketch'
 
-const VALID: Page[] = ['home','tasks','notes','projects','bookmarks','scratchpad','calculator','converter','timer','stopwatch','textutils','json','color','datecalc','password','fileviewer','settings','scoreboard','calendar','kanban','focus','files','toolshub','tracker']
+const VALID: Page[] = ['home','tasks','notes','projects','bookmarks','scratchpad','calculator','converter','timer','stopwatch','textutils','json','color','datecalc','password','fileviewer','settings','scoreboard','calendar','kanban','focus','files','toolshub','tracker','decision','estimator','wizard','sketch']
 
 const PAGE_LABELS: Record<Page, string> = {
   home: 'Home', tasks: 'Tasks', notes: 'Notes', projects: 'Projects', bookmarks: 'Bookmarks',
   scratchpad: 'Scratchpad', calculator: 'Calculator', converter: 'Converter', timer: 'Timer',
   stopwatch: 'Stopwatch', textutils: 'Text Utils', json: 'JSON', color: 'Colour',
   datecalc: 'Date Calc', password: 'Password', fileviewer: 'File Viewer', settings: 'Settings',
-  scoreboard: 'Scoreboard', calendar: 'Calendar', kanban: 'Kanban', focus: 'Focus', files: 'Files', toolshub: 'Tools Hub', tracker: 'Tracker'
+  scoreboard: 'Scoreboard', calendar: 'Calendar', kanban: 'Kanban', focus: 'Focus', files: 'Files', toolshub: 'Tools Hub', tracker: 'Tracker', decision: 'Decisions', estimator: 'Estimator', wizard: 'Wizard', sketch: 'Sketch'
 }
 
 function getPageFromHash(): Page {
@@ -132,6 +136,10 @@ export default function App() {
     ]},
     { section: 'TOOLS', items: [
       { id: 'toolshub' as Page, label: 'Tools Hub', icon: Search },
+      { id: 'sketch' as Page, label: 'Sketch', icon: FileText },
+      { id: 'wizard' as Page, label: 'Wizard', icon: FileSearch },
+      { id: 'decision' as Page, label: 'Decisions', icon: CheckSquare },
+      { id: 'estimator' as Page, label: 'Estimator', icon: Calculator },
       { id: 'calculator' as Page, label: 'Calculator', icon: CalcIcon },
       { id: 'converter' as Page, label: 'Converter', icon: ArrowLeftRight },
       { id: 'timer' as Page, label: 'Timer', icon: TimerIcon },
@@ -200,6 +208,10 @@ export default function App() {
       case 'files': return <FileWorkspace />
       case 'toolshub': return <ToolsHub />
       case 'tracker': return <Tracker />
+      case 'decision': return <DecisionCalc />
+      case 'estimator': return <Estimator />
+      case 'wizard': return <Wizard />
+      case 'sketch': return <SketchStudio />
       default: return <HomePage greeting={greeting} setPage={setPage} />
     }
   }
