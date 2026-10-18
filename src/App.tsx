@@ -23,18 +23,19 @@ import Kanban from './pages/Kanban'
 import FocusMode from './pages/FocusMode'
 import FileWorkspace from './pages/FileWorkspace'
 import ToolsHub from './pages/ToolsHub'
+import Tracker from './pages/Tracker'
 import { loadJSON } from './lib/storage'
 
-type Page = 'home' | 'tasks' | 'notes' | 'projects' | 'bookmarks' | 'scratchpad' | 'calculator' | 'converter' | 'timer' | 'stopwatch' | 'textutils' | 'json' | 'color' | 'datecalc' | 'password' | 'fileviewer' | 'settings' | 'scoreboard' | 'calendar' | 'kanban' | 'focus' | 'files' | 'toolshub'
+type Page = 'home' | 'tasks' | 'notes' | 'projects' | 'bookmarks' | 'scratchpad' | 'calculator' | 'converter' | 'timer' | 'stopwatch' | 'textutils' | 'json' | 'color' | 'datecalc' | 'password' | 'fileviewer' | 'settings' | 'scoreboard' | 'calendar' | 'kanban' | 'focus' | 'files' | 'toolshub' | 'tracker'
 
-const VALID: Page[] = ['home','tasks','notes','projects','bookmarks','scratchpad','calculator','converter','timer','stopwatch','textutils','json','color','datecalc','password','fileviewer','settings','scoreboard','calendar','kanban','focus','files','toolshub']
+const VALID: Page[] = ['home','tasks','notes','projects','bookmarks','scratchpad','calculator','converter','timer','stopwatch','textutils','json','color','datecalc','password','fileviewer','settings','scoreboard','calendar','kanban','focus','files','toolshub','tracker']
 
 const PAGE_LABELS: Record<Page, string> = {
   home: 'Home', tasks: 'Tasks', notes: 'Notes', projects: 'Projects', bookmarks: 'Bookmarks',
   scratchpad: 'Scratchpad', calculator: 'Calculator', converter: 'Converter', timer: 'Timer',
   stopwatch: 'Stopwatch', textutils: 'Text Utils', json: 'JSON', color: 'Colour',
   datecalc: 'Date Calc', password: 'Password', fileviewer: 'File Viewer', settings: 'Settings',
-  scoreboard: 'Scoreboard', calendar: 'Calendar', kanban: 'Kanban', focus: 'Focus', files: 'Files', toolshub: 'Tools Hub'
+  scoreboard: 'Scoreboard', calendar: 'Calendar', kanban: 'Kanban', focus: 'Focus', files: 'Files', toolshub: 'Tools Hub', tracker: 'Tracker'
 }
 
 function getPageFromHash(): Page {
@@ -120,6 +121,7 @@ export default function App() {
       { id: 'tasks' as Page, label: 'Tasks', icon: CheckSquare },
       { id: 'notes' as Page, label: 'Notes', icon: StickyNote },
       { id: 'projects' as Page, label: 'Projects', icon: Folder },
+      { id: 'tracker' as Page, label: 'Tracker', icon: Folder },
       { id: 'kanban' as Page, label: 'Kanban', icon: LayoutGrid },
       { id: 'calendar' as Page, label: 'Calendar', icon: Calendar },
       { id: 'bookmarks' as Page, label: 'Bookmarks', icon: Bookmark },
@@ -175,6 +177,7 @@ export default function App() {
       case 'focus': return <FocusMode />
       case 'files': return <FileWorkspace />
       case 'toolshub': return <ToolsHub />
+      case 'tracker': return <Tracker />
       default: return <HomePage greeting={greeting} setPage={setPage} />
     }
   }
