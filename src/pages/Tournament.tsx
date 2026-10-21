@@ -17,6 +17,8 @@ export default function TournamentManager() {
   const [name, setName] = useState('')
   const [format, setFormat] = useState<Format>('knockout')
   const [names, setNames] = useState('')
+  const [nameInput, setNameInput] = useState('')
+  const [nameList, setNameList] = useState<string[]>([])
   const [numGroups, setNumGroups] = useState(2)
   const [qualify, setQualify] = useState(2)
   const [error, setError] = useState('')
@@ -32,7 +34,8 @@ export default function TournamentManager() {
   }
 
   const create = () => {
-    const raw = names.split('\n').map(s => s.trim()).filter(Boolean)
+    const fromText = names.split(/\r?\n/).map(s => s.trim()).filter(Boolean)
+    const raw = [...nameList, ...fromText]
     const unique = Array.from(new Set(raw))
     if (unique.length < 2) { setError('Need at least 2 participants'); return }
     if (unique.length !== raw.length) { setError('Duplicate names not allowed'); return }
@@ -61,7 +64,7 @@ export default function TournamentManager() {
     setActiveId(t.id)
     setCreating(false)
     setError('')
-    setName(''); setNames('')
+    setName(''); setNames(''); setNameList([]); setNameInput('')
     setView('matches')
   }
 
@@ -139,7 +142,27 @@ export default function TournamentManager() {
               <label>Qualify each <input type="number" min={1} max={4} value={qualify} onChange={e => setQualify(Math.max(1, +e.target.value || 1))} style={numStyle} /></label>
             </div>
           )}
-          <textarea value={names} onChange={e => setNames(e.target.value)} placeholder="One participant per line" rows={5} style={{ ...inputStyle, resize: 'vertical' }} />
+          <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+            <input
+              value={nameInput}
+              onChange={e => setNameInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); const n = nameInput.trim(); if (n && !nameList.includes(n)) { setNameList([...nameList, n]); setNameInput('') } } }}
+              placeholder="Participant name"
+              style={{ ...inputStyle, margin: 0, flex: 1 }}
+            />
+            <button type="button" className="btn" onClick={() => { const n = nameInput.trim(); if (n && !nameList.includes(n)) { setNameList([...nameList, n]); setNameInput('') } }}>Add</button>
+          </div>
+          {nameList.length > 0 && (
+            <div style={{ marginBottom: 8, fontSize: 13 }}>
+              {nameList.map((n, i) => (
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, margin: '0 6px 6px 0', padding: '4px 8px', background: 'rgba(255,255,255,0.06)', borderRadius: 6 }}>
+                  {n}
+                  <button type="button" className="btn" style={{ fontSize: 11, padding: '2px 6px' }} onClick={() => setNameList(nameList.filter((_, j) => j !== i))}>\u00d7</button>
+                </span>
+              ))}
+            </div>
+          )}
+          <textarea value={names} onChange={e => setNames(e.target.value)} placeholder="Or paste one name per line" rows={3} style={{ ...inputStyle, resize: 'vertical' }} />
           {error && <p style={{ color: 'var(--accent)', marginTop: 6, fontSize: 13 }}>{error}</p>}
           <button className="btn btn-primary" style={{ marginTop: 8 }} onClick={create}>Create</button>
         </div>
@@ -160,7 +183,7 @@ export default function TournamentManager() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
             <div>
               <strong>{active.name}</strong>
-              <span style={{ color: 'var(--text-muted)', marginLeft: 8, fontSize: 13 }}>{active.format} · {active.participants.length} players</span>
+              <span style={{ color: 'var(--text-muted)', marginLeft: 8, fontSize: 13 }}>{active.format} \u00b7 {active.participants.length} players</span>
             </div>
             <div style={{ display: 'flex', gap: 4 }}>
               <button className="btn" onClick={() => rename(active.id)}>Rename</button>
@@ -242,7 +265,7 @@ function MatchList({ t, scores, setScores, saveScore, clear, nameOf }: {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <span style={{ flex: 1, minWidth: 80, fontWeight: 500 }}>{nameOf(t, m.a)}</span>
               <input type="text" inputMode="numeric" pattern="[0-9]*" value={sc.a} onChange={e => setScores(prev => ({ ...prev, [m.id]: { ...sc, a: e.target.value.replace(/[^0-9]/g, '') } }))} style={{ width: 56, height: 44, textAlign: 'center', fontSize: 18, background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)' }} aria-label="Score A" />
-              <span style={{ color: 'var(--text-muted)' }}>–</span>
+              <span style={{ color: 'var(--text-muted)' }}>\u2013</span>
               <input type="text" inputMode="numeric" pattern="[0-9]*" value={sc.b} onChange={e => setScores(prev => ({ ...prev, [m.id]: { ...sc, b: e.target.value.replace(/[^0-9]/g, '') } }))} style={{ width: 56, height: 44, textAlign: 'center', fontSize: 18, background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)' }} aria-label="Score B" />
               <span style={{ flex: 1, minWidth: 80, textAlign: 'right', fontWeight: 500 }}>{nameOf(t, m.b)}</span>
             </div>
@@ -286,7 +309,7 @@ function GroupsView({ t }: { t: Tournament }) {
   return (
     <div>
       {ties.length > 0 && <div className="panel" style={{ marginBottom: 12, borderLeft: '3px solid var(--warning)' }}><p style={{ color: 'var(--warning)' }}>Qualification unresolved due to ties. Knockout will generate once ties are broken.</p></div>}
-      {qualifiers && <div className="panel" style={{ marginBottom: 12, borderLeft: '3px solid var(--success)' }}><p>Qualifiers: {qualifiers.map(id => t.participants.find(p => p.id === id)?.name).join(', ')}</p><p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Seeded by group position (A1, B1, … then A2, B2, …). Knockout generated automatically.</p></div>}
+      {qualifiers && <div className="panel" style={{ marginBottom: 12, borderLeft: '3px solid var(--success)' }}><p>Qualifiers: {qualifiers.map(id => t.participants.find(p => p.id === id)?.name).join(', ')}</p><p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Seeded by group position (A1, B1, \u2026 then A2, B2, \u2026). Knockout generated automatically.</p></div>}
       {!qualifiers && ties.length === 0 && <p style={{ color: 'var(--text-muted)' }}>Complete all group matches to generate the knockout.</p>}
     </div>
   )
