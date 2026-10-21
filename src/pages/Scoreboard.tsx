@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { loadJSON, saveJSON } from '../lib/storage'
 import TournamentManager from './Tournament'
+import PokerTable from './PokerTable'
 
 type Player = { name: string; score: number }
 type HistoryEntry = { player: number; delta: number }
@@ -34,7 +35,7 @@ function migrate(raw: unknown): Match {
 }
 
 export default function Scoreboard() {
-  const [tab, setTab] = useState<'live' | 'tournaments'>('live')
+  const [tab, setTab] = useState<'live' | 'poker' | 'tournaments'>('live')
   const [match, setMatch] = useState<Match>(() => migrate(loadJSON(KEY, null)))
   const [editing, setEditing] = useState(false)
   const [names, setNames] = useState(match.players.map(p => p.name))
@@ -90,9 +91,10 @@ export default function Scoreboard() {
       <h1 className="page-title">Scoreboard & Tournaments</h1>
       <div className="quick-actions" style={{ margin: '12px 0' }}>
         <button className={`btn ${tab === 'live' ? 'btn-primary' : ''}`} onClick={() => setTab('live')}>Live Score</button>
+        <button className={`btn ${tab === 'poker' ? 'btn-primary' : ''}`} onClick={() => setTab('poker')}>Poker Table</button>
         <button className={`btn ${tab === 'tournaments' ? 'btn-primary' : ''}`} onClick={() => setTab('tournaments')}>Tournaments</button>
       </div>
-      {tab === 'tournaments' ? <TournamentManager /> : <>
+      {tab === 'tournaments' ? <TournamentManager /> : tab === 'poker' ? <PokerTable /> : <>
         <p className="subtitle">{match.name} — saved locally</p>
 
         <div style={{ display: 'flex', gap: 6, margin: '12px 0' }}>
